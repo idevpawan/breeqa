@@ -38,8 +38,10 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Define public routes that authenticated users shouldn't access
-  const publicRoutes = ["/", "/auth"];
-  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
+  const publicRoutes = ["/", "/auth", "/invite"];
+  const isPublicRoute =
+    publicRoutes.includes(request.nextUrl.pathname) ||
+    request.nextUrl.pathname.startsWith("/invite/");
 
   // Protected routes - redirect unauthenticated users to auth
   if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
@@ -48,8 +50,44 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from public routes
-  if (isPublicRoute && user) {
+  // Organization onboarding flow for authenticated users
+  if (user && !isPublicRoute) {
+    // Check if user has any organizations
+    const { data: memberships } = await supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .limit(1);
+
+    // If user has no organizations and not on onboarding page, redirect to onboarding
+    if (
+      (!memberships || memberships.length === 0) &&
+      !request.nextUrl.pathname.startsWith("/onboarding")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
+
+    // If user has organizations but is on onboarding page, redirect to dashboard
+    if (
+      memberships &&
+      memberships.length > 0 &&
+      request.nextUrl.pathname.startsWith("/onboarding")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Redirect authenticated users away from public routes (except invite pages)
+  if (
+    isPublicRoute &&
+    user &&
+    !request.nextUrl.pathname.startsWith("/invite/")
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

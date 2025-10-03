@@ -11,10 +11,13 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const supabase = createClient();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
   const handleGitHubLogin = async () => {
     setIsLoading(true);
@@ -22,7 +25,9 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${
+            window.location.origin
+          }/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
         },
       });
       if (error) {
@@ -41,7 +46,9 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${
+            window.location.origin
+          }/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
         },
       });
       if (error) {
