@@ -43,7 +43,7 @@ export default function OrganizationSettingsPage() {
         .select(
           `
           *,
-          user:user_profiles(*)
+          user:user_profiles!user_id(*)
         `
         )
         .eq("organization_id", currentOrganization.id)

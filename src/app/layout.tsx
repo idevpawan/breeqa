@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Breeqa - Next.js + shadcn/ui",
+  title: "Breeqa",
   description:
     "A modern Next.js application with shadcn/ui components and theme switching",
 };

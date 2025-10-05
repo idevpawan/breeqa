@@ -109,7 +109,7 @@ export class OrganizationServiceClient {
         .select(
           `
           *,
-          user:user_profiles(*),
+          user:user_profiles!user_id(*),
           organization:organizations(*)
         `
         )
@@ -305,7 +305,7 @@ export class OrganizationServiceClient {
         .select(
           `
           *,
-          user:user_profiles(*)
+          user:user_profiles!user_id(*)
         `,
           { count: "exact" }
         )
