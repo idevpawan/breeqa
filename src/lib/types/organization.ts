@@ -70,6 +70,7 @@ export interface Project {
   name: string;
   description?: string;
   status: "active" | "archived" | "completed";
+  icon?: string;
   created_by?: string;
   created_at: string;
   updated_at: string;

@@ -36,7 +36,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const { currentOrganization } = useOrganization();
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProject, setCurrentProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load projects for current organization
@@ -160,9 +160,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     async (projectId: string): Promise<ApiResponse<boolean>> => {
       try {
         setError(null);
-        const response = await organizationServiceClient.deleteProject(
-          projectId
-        );
+        const response =
+          await organizationServiceClient.deleteProject(projectId);
 
         if (response.success) {
           // Remove the project from the list

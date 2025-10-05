@@ -34,6 +34,7 @@ import {
   useUserAvatar,
 } from "@/lib/contexts/user-profile-context";
 import { createClient } from "@/lib/supabase/client";
+import { ThemeToggle } from "./theme-toggle";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -66,10 +67,10 @@ export function NavUser() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" disabled>
-            <div className="h-8 w-8 rounded-lg bg-muted animate-pulse" />
+            <div className="h-8 w-8 rounded-lg bg-foreground animate-pulse" />
             <div className="grid flex-1 gap-2">
-              <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-              <div className="h-2 w-32 bg-muted animate-pulse rounded" />
+              <div className="h-3 w-24 bg-foreground animate-pulse rounded" />
+              <div className="h-2 w-32 bg-foreground animate-pulse rounded" />
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -77,7 +78,7 @@ export function NavUser() {
     );
   }
 
-  if (!userProfile) {
+  if (!isLoading && !userProfile) {
     return null;
   }
 
@@ -91,14 +92,14 @@ export function NavUser() {
               className="bg-sidebar-accent md:h-12 md:p-2"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={userProfile.avatar_url} alt={displayName} />
+                <AvatarImage src={userProfile?.avatar_url} alt={displayName} />
                 <AvatarFallback className="rounded-lg">
                   {initials}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{displayName}</span>
-                <span className="truncate text-xs">{userProfile.email}</span>
+                <span className="truncate text-xs">{userProfile?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -112,14 +113,17 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={userProfile.avatar_url} alt={displayName} />
+                  <AvatarImage
+                    src={userProfile?.avatar_url}
+                    alt={displayName}
+                  />
                   <AvatarFallback className="rounded-lg">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{displayName}</span>
-                  <span className="truncate text-xs">{userProfile.email}</span>
+                  <span className="truncate text-xs">{userProfile?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -129,31 +133,10 @@ export function NavUser() {
                 <User />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSettingsClick}>
-                <Settings />
-                Settings
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
+              {/* theme switcher */}
+              <DropdownMenuItem className="flex justify-between">
+                <span>Theme</span>
+                <ThemeToggle />
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

@@ -22,6 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProjectCreationDialog } from "@/components/project-creation-dialog";
 import { useProjects } from "@/lib/contexts/project-context";
+import Link from "next/link";
+import Image from "next/image";
 
 export function NavProjects() {
   const { isMobile } = useSidebar();
@@ -42,30 +44,28 @@ export function NavProjects() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel>Projects</SidebarGroupLabel>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton disabled>
-              <Folder />
-              <span>Loading...</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroup>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+  //       <SidebarGroupLabel>Projects</SidebarGroupLabel>
+  //       <SidebarMenu>
+  //         <div className="flex flex-col gap-2 p-2">
+  //           <div className="size-8 w-[60%] animate-pulse rounded-lg bg-muted"></div>
+  //           <div className="size-8 w-[40%] animate-pulse rounded-lg bg-muted"></div>
+  //         </div>
+  //       </SidebarMenu>
+  //     </SidebarGroup>
+  //   );
+  // }
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.length === 0 ? (
+        {!isLoading && projects.length === 0 ? (
           <SidebarMenuItem>
             <div className="flex flex-col gap-2 p-2">
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-sm text-muted-foreground text-">
                 No projects yet
               </p>
               <ProjectCreationDialog onProjectCreated={handleProjectCreated}>
@@ -81,10 +81,19 @@ export function NavProjects() {
             {projects.map((project) => (
               <SidebarMenuItem key={project.id}>
                 <SidebarMenuButton asChild>
-                  <a href={`/projects/${project.id}`}>
-                    <Folder />
+                  <Link href={`/projects/${project.id}`}>
+                    {project.icon ? (
+                      <Image
+                        src={project.icon}
+                        alt={project.name}
+                        width={20}
+                        height={20}
+                      />
+                    ) : (
+                      <Folder />
+                    )}
                     <span>{project.name}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

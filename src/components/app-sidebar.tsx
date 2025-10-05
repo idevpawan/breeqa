@@ -58,11 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "#",
         icon: CreditCard,
       },
-      {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-      },
+      { title: "Settings", url: "#", icon: Settings2 },
     ],
     navSecondary: [
       {
