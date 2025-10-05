@@ -13,6 +13,7 @@ import {
   PERMISSIONS,
   ROLE_HIERARCHY,
 } from "@/lib/types/organization";
+import { emailService } from "./email-service";
 
 // Client-side organization service
 export class OrganizationServiceClient {
@@ -276,6 +277,19 @@ export class OrganizationServiceClient {
 
       if (error) {
         return { data: null, error: error.message, success: false };
+      }
+
+      // Send invitation email
+      try {
+        const emailResult = await emailService.sendInvitationEmail(invitation);
+        if (!emailResult.success) {
+          console.warn("Failed to send invitation email:", emailResult.error);
+          // Don't fail the invitation creation if email fails
+          // The invitation is still created in the database
+        }
+      } catch (emailError) {
+        console.warn("Email service error:", emailError);
+        // Don't fail the invitation creation if email fails
       }
 
       return { data: invitation, error: null, success: true };

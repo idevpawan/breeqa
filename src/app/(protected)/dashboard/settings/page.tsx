@@ -16,6 +16,7 @@ import {
   useOrganization,
   usePermission,
 } from "@/lib/contexts/organization-context";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { organizationServiceClient } from "@/lib/services/organization-client";
@@ -75,28 +76,38 @@ export default function OrganizationSettingsPage() {
     setSuccess(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setError("You must be logged in to invite users");
-        return;
+      console.log("Sending invitation request:", {
+        email: inviteEmail,
+        role: inviteRole,
+        organizationId: currentOrganization.id,
+      });
+
+      const response = await fetch("/api/invite-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: inviteEmail,
+          role: inviteRole,
+          organizationId: currentOrganization.id,
+        }),
+      });
+
+      console.log("Response status:", response.status);
+      const data = await response.json();
+      console.log("Response data:", data);
+
+      if (data.success) {
+        setSuccess(data.message || `Invitation sent to ${inviteEmail}`);
+        setInviteEmail("");
+        setInviteRole("viewer");
+        // Refresh members list
+        loadMembers();
+      } else {
+        setError(data.error || "Failed to send invitation");
       }
-
-      const response = await organizationServiceClient.inviteUser(
-        currentOrganization.id,
-        inviteEmail,
-        inviteRole
-      );
-
-      if (!response.success || !response.data) {
-        setError(response.error || "Failed to send invitation");
-        return;
-      }
-
-      setSuccess(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-      setInviteRole("viewer");
     } catch (error) {
       console.error("Error inviting user:", error);
       setError("Failed to send invitation");
@@ -266,12 +277,19 @@ export default function OrganizationSettingsPage() {
                     </div>
                   </div>
 
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !inviteEmail.trim()}
-                  >
-                    {isLoading ? "Sending..." : "Send Invitation"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !inviteEmail.trim()}
+                    >
+                      {isLoading ? "Sending..." : "Send Invitation"}
+                    </Button>
+                    <Link href="/dashboard/settings/email-test">
+                      <Button type="button" variant="outline">
+                        Test Email
+                      </Button>
+                    </Link>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -315,14 +333,14 @@ export default function OrganizationSettingsPage() {
                           member.role === "admin"
                             ? "bg-red-100 text-red-800"
                             : member.role === "manager"
-                            ? "bg-orange-100 text-orange-800"
-                            : member.role === "developer"
-                            ? "bg-blue-100 text-blue-800"
-                            : member.role === "designer"
-                            ? "bg-purple-100 text-purple-800"
-                            : member.role === "qa"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
+                              ? "bg-orange-100 text-orange-800"
+                              : member.role === "developer"
+                                ? "bg-blue-100 text-blue-800"
+                                : member.role === "designer"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : member.role === "qa"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {member.role}
