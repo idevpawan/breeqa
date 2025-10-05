@@ -49,7 +49,7 @@ export class EmailService {
       );
 
       const { data, error } = await this.resend.emails.send({
-        from: `${invitation.organization?.name || "Breeqa"} <noreply@${process.env.RESEND_DOMAIN || "breeqa.vercel.app"}>`,
+        from: `${invitation.organization?.name || "Breeqa"} <noreply@${process.env.RESEND_DOMAIN || "handlly.com"}>`,
         to: [invitation.email],
         subject: `You're invited to join ${invitation.organization?.name || "our organization"}`,
         html: await emailHtml,
@@ -76,7 +76,7 @@ export class EmailService {
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: `Breeqa <noreply@${process.env.RESEND_DOMAIN || "breeqa.com"}>`,
+        from: `Breeqa <noreply@${process.env.RESEND_DOMAIN || "handlly.com"}>`,
         to: [to],
         subject: "Test Email from Breeqa",
         html: `

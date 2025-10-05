@@ -59,15 +59,20 @@ export function OrganizationProvider({
         if (response.data.currentOrganization) {
           setCurrentOrganization(response.data.currentOrganization);
           // Get user's role in current organization
-          const { data: member } = await supabase
-            .from("organization_members")
-            .select("role")
-            .eq("organization_id", response.data.currentOrganization.id)
-            .eq("status", "active")
-            .single();
+          const {
+            data: { user: authUser },
+          } = await supabase.auth.getUser();
+          if (authUser) {
+            const { data: members } = await supabase
+              .from("organization_members")
+              .select("role")
+              .eq("organization_id", response.data.currentOrganization.id)
+              .eq("user_id", authUser.id)
+              .eq("status", "active");
 
-          if (member) {
-            setUserRole(member.role);
+            if (members && members.length > 0) {
+              setUserRole(members[0].role);
+            }
           }
         }
       }
@@ -91,17 +96,22 @@ export function OrganizationProvider({
 
         setCurrentOrganization(organization);
 
-        // // Get user's role in the selected organization
-        // const { data: member } = await supabase
-        //   .from("organization_members")
-        //   .select("role")
-        //   .eq("organization_id", orgId)
-        //   .eq("status", "active")
-        //   .single();
+        // Get user's role in the selected organization
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: members } = await supabase
+            .from("organization_members")
+            .select("role")
+            .eq("organization_id", orgId)
+            .eq("user_id", authUser.id)
+            .eq("status", "active");
 
-        // if (member) {
-        //   setUserRole(member.role);
-        // }
+          if (members && members.length > 0) {
+            setUserRole(members[0].role);
+          }
+        }
 
         // Store current organization in localStorage for persistence
         localStorage.setItem("currentOrganizationId", orgId);
@@ -133,27 +143,35 @@ export function OrganizationProvider({
 
   // Restore last selected organization from localStorage
   useEffect(() => {
-    const savedOrgId = localStorage.getItem("currentOrganizationId");
-    if (savedOrgId && memberships.length > 0) {
-      const savedOrg = memberships.find(
-        (m) => m.organization_id === savedOrgId
-      );
-      if (savedOrg) {
-        setCurrentOrganization(savedOrg.organization!);
-        // Get user's role
-        // supabase
-        //   .from("organization_members")
-        //   .select("role")
-        //   .eq("organization_id", savedOrgId)
-        //   .eq("status", "active")
-        //   .single()
-        //   .then(({ data: member }) => {
-        //     if (member) {
-        //       setUserRole(member.role);
-        //     }
-        //   });
+    const restoreOrganization = async () => {
+      const savedOrgId = localStorage.getItem("currentOrganizationId");
+      if (savedOrgId && memberships.length > 0) {
+        const savedOrg = memberships.find(
+          (m) => m.organization_id === savedOrgId
+        );
+        if (savedOrg) {
+          setCurrentOrganization(savedOrg.organization!);
+          // Get user's role
+          const {
+            data: { user: authUser },
+          } = await supabase.auth.getUser();
+          if (authUser) {
+            const { data: members } = await supabase
+              .from("organization_members")
+              .select("role")
+              .eq("organization_id", savedOrgId)
+              .eq("user_id", authUser.id)
+              .eq("status", "active");
+
+            if (members && members.length > 0) {
+              setUserRole(members[0].role);
+            }
+          }
+        }
       }
-    }
+    };
+
+    restoreOrganization();
   }, [memberships, supabase]);
 
   // Listen for auth changes
