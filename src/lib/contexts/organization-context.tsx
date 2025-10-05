@@ -91,17 +91,17 @@ export function OrganizationProvider({
 
         setCurrentOrganization(organization);
 
-        // Get user's role in the selected organization
-        const { data: member } = await supabase
-          .from("organization_members")
-          .select("role")
-          .eq("organization_id", orgId)
-          .eq("status", "active")
-          .single();
+        // // Get user's role in the selected organization
+        // const { data: member } = await supabase
+        //   .from("organization_members")
+        //   .select("role")
+        //   .eq("organization_id", orgId)
+        //   .eq("status", "active")
+        //   .single();
 
-        if (member) {
-          setUserRole(member.role);
-        }
+        // if (member) {
+        //   setUserRole(member.role);
+        // }
 
         // Store current organization in localStorage for persistence
         localStorage.setItem("currentOrganizationId", orgId);
@@ -141,17 +141,17 @@ export function OrganizationProvider({
       if (savedOrg) {
         setCurrentOrganization(savedOrg.organization!);
         // Get user's role
-        supabase
-          .from("organization_members")
-          .select("role")
-          .eq("organization_id", savedOrgId)
-          .eq("status", "active")
-          .single()
-          .then(({ data: member }) => {
-            if (member) {
-              setUserRole(member.role);
-            }
-          });
+        // supabase
+        //   .from("organization_members")
+        //   .select("role")
+        //   .eq("organization_id", savedOrgId)
+        //   .eq("status", "active")
+        //   .single()
+        //   .then(({ data: member }) => {
+        //     if (member) {
+        //       setUserRole(member.role);
+        //     }
+        //   });
       }
     }
   }, [memberships, supabase]);

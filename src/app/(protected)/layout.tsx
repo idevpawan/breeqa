@@ -19,7 +19,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "350px",
+          "--sidebar-width": "16rem",
         } as React.CSSProperties
       }
     >
