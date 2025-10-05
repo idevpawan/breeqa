@@ -6,11 +6,9 @@ import {
   Bot,
   CircleDot,
   Command,
-  Frame,
+  CreditCard,
   LayoutDashboard,
   LifeBuoy,
-  Map,
-  PieChart,
   Send,
   Settings2,
   SquareTerminal,
@@ -38,11 +36,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { currentOrganization, userRole } = useOrganization();
 
   const data = {
-    user: {
-      name: "shadcn",
-      email: "m@example.com",
-      avatar: "/avatars/shadcn.jpg",
-    },
     navMain: [
       {
         title: "Dasboard",
@@ -56,28 +49,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: CircleDot,
       },
       {
-        title: "Members",
+        title: "Team & Permissions",
         url: "/members",
         icon: Users,
+      },
+      {
+        title: "Billing & Usage",
+        url: "#",
+        icon: CreditCard,
       },
       {
         title: "Settings",
         url: "#",
         icon: Settings2,
-        items: [
-          {
-            title: "General",
-            url: "/settings/general",
-          },
-          {
-            title: "Team & Permissions",
-            url: "/settings/team-permissions",
-          },
-          {
-            title: "Billing",
-            url: "/settings/billing",
-          },
-        ],
       },
     ],
     navSecondary: [
@@ -92,23 +76,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Send,
       },
     ],
-    projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
   };
   return (
     <Sidebar
@@ -121,11 +88,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavProjects />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

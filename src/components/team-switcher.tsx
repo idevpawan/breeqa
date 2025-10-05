@@ -90,7 +90,7 @@ export function OrganizationSwitcher() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <span className="text-sm capitalize font-semibold">

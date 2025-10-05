@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { OrganizationProvider } from "@/lib/contexts/organization-context";
+import { UserProfileProvider } from "@/lib/contexts/user-profile-context";
+import { ProjectProvider } from "@/lib/contexts/project-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,7 +38,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <OrganizationProvider>{children}</OrganizationProvider>
+          <UserProfileProvider>
+            <OrganizationProvider>
+              <ProjectProvider>{children}</ProjectProvider>
+            </OrganizationProvider>
+          </UserProfileProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -4,6 +4,7 @@ import {
   UserProfile,
   OrganizationMember,
   OrganizationInvitation,
+  Project,
   UserRole,
   ApiResponse,
   OrganizationListResponse,
@@ -327,6 +328,147 @@ export class OrganizationServiceClient {
         error: null,
         success: true,
       };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Update organization logo (client-side)
+  async updateOrganizationLogo(
+    organizationId: string,
+    logoUrl: string
+  ): Promise<ApiResponse<Organization>> {
+    try {
+      const { data: organization, error } = await this.supabase
+        .from("organizations")
+        .update({ logo_url: logoUrl })
+        .eq("id", organizationId)
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: error.message, success: false };
+      }
+
+      return { data: organization, error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Get organization projects (client-side)
+  async getOrganizationProjects(
+    organizationId: string
+  ): Promise<ApiResponse<Project[]>> {
+    try {
+      const { data: projects, error } = await this.supabase
+        .from("projects")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        return { data: null, error: error.message, success: false };
+      }
+
+      return { data: projects || [], error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Create project (client-side)
+  async createProject(
+    organizationId: string,
+    name: string,
+    description?: string
+  ): Promise<ApiResponse<Project>> {
+    try {
+      const {
+        data: { user },
+      } = await this.supabase.auth.getUser();
+      if (!user) {
+        return { data: null, error: "Not authenticated", success: false };
+      }
+
+      const { data: project, error } = await this.supabase
+        .from("projects")
+        .insert({
+          organization_id: organizationId,
+          name,
+          description,
+          created_by: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: error.message, success: false };
+      }
+
+      return { data: project, error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Update project (client-side)
+  async updateProject(
+    projectId: string,
+    updates: Partial<Pick<Project, "name" | "description" | "status">>
+  ): Promise<ApiResponse<Project>> {
+    try {
+      const { data: project, error } = await this.supabase
+        .from("projects")
+        .update(updates)
+        .eq("id", projectId)
+        .select()
+        .single();
+
+      if (error) {
+        return { data: null, error: error.message, success: false };
+      }
+
+      return { data: project, error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Delete project (client-side)
+  async deleteProject(projectId: string): Promise<ApiResponse<boolean>> {
+    try {
+      const { error } = await this.supabase
+        .from("projects")
+        .delete()
+        .eq("id", projectId);
+
+      if (error) {
+        return { data: null, error: error.message, success: false };
+      }
+
+      return { data: true, error: null, success: true };
     } catch (error) {
       return {
         data: null,

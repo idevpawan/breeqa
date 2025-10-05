@@ -19,6 +19,8 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export function NavMain({
   items,
@@ -34,15 +36,48 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const [currentItem, setCurrentItem] = useState<{
+    title: string;
+    url: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentActiveItem = items.find(
+        (item) => item.url === window.location.pathname
+      );
+      setCurrentItem(currentActiveItem || null);
+    }
+  }, [items]);
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+          <Collapsible
+            key={item.title}
+            asChild
+            defaultOpen={currentItem?.title === item.title}
+          >
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <Link href={item.url}>
+              <SidebarMenuButton
+                className={cn(
+                  currentItem?.title === item.title && "bg-sidebar-accent"
+                )}
+                data-state={
+                  currentItem?.title === item.title ? "open" : "closed"
+                }
+                asChild
+                tooltip={item.title}
+              >
+                <Link
+                  href={item.url}
+                  className={cn(
+                    currentItem?.title === item.title &&
+                      "text-sidebar-accent-foreground"
+                  )}
+                >
                   <item.icon />
                   <span>{item.title}</span>
                 </Link>
@@ -50,7 +85,11 @@ export function NavMain({
               {item.items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-90">
+                    <SidebarMenuAction
+                      className={cn(
+                        currentItem?.title === item.title && "rotate-90"
+                      )}
+                    >
                       <ChevronRight />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>

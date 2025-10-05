@@ -12,8 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FileUpload } from "@/components/ui/file-upload";
 import { organizationServiceClient } from "@/lib/services/organization-client";
+import { MediaService } from "@/lib/storage/media-service";
+import { FILE_SIZE_LIMITS } from "@/lib/storage/wasabi-config";
 import { useOrganization } from "@/lib/contexts/organization-context";
+import { Loader2, Image, X } from "lucide-react";
 
 interface OrganizationCreationFormProps {
   open: boolean;
@@ -31,6 +35,8 @@ export function OrganizationCreationForm({
     slug: "",
     description: "",
   });
+  const [selectedLogo, setSelectedLogo] = React.useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
   const { refreshOrganizations } = useOrganization();
 
   const handleInputChange = (
@@ -54,6 +60,23 @@ export function OrganizationCreationForm({
         ...prev,
         slug: slug,
       }));
+    }
+  };
+
+  const handleLogoSelect = (file: File) => {
+    setSelectedLogo(file);
+    setError(null);
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setLogoPreview(previewUrl);
+  };
+
+  const handleLogoRemove = () => {
+    setSelectedLogo(null);
+    if (logoPreview) {
+      URL.revokeObjectURL(logoPreview);
+      setLogoPreview(null);
     }
   };
 
@@ -90,11 +113,40 @@ export function OrganizationCreationForm({
         throw new Error(response.error || "Failed to create organization");
       }
 
+      // Upload logo if selected
+      if (selectedLogo && response.data) {
+        try {
+          const logoUploadResult = await MediaService.uploadOrganizationLogo(
+            response.data.id,
+            selectedLogo
+          );
+
+          if (logoUploadResult.success && logoUploadResult.publicUrl) {
+            // Update organization with logo URL
+            await organizationServiceClient.updateOrganizationLogo(
+              response.data.id,
+              logoUploadResult.publicUrl
+            );
+          }
+        } catch (logoError) {
+          console.warn(
+            "Logo upload failed, but organization was created:",
+            logoError
+          );
+          // Don't fail the entire process if logo upload fails
+        }
+      }
+
       // Refresh organizations list
       await refreshOrganizations();
 
       // Reset form and close dialog
       setFormData({ name: "", slug: "", description: "" });
+      setSelectedLogo(null);
+      if (logoPreview) {
+        URL.revokeObjectURL(logoPreview);
+        setLogoPreview(null);
+      }
       onOpenChange(false);
     } catch (error) {
       console.error("Organization creation error:", error);
@@ -110,6 +162,11 @@ export function OrganizationCreationForm({
     if (!newOpen) {
       // Reset form when closing
       setFormData({ name: "", slug: "", description: "" });
+      setSelectedLogo(null);
+      if (logoPreview) {
+        URL.revokeObjectURL(logoPreview);
+        setLogoPreview(null);
+      }
       setError(null);
     }
     onOpenChange(newOpen);
@@ -125,6 +182,51 @@ export function OrganizationCreationForm({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Logo Upload Section */}
+          <div className="space-y-2">
+            <Label>Organization Logo (Optional)</Label>
+            {logoPreview ? (
+              <div className="flex items-center space-x-4 p-4 border rounded-lg">
+                <img
+                  src={logoPreview}
+                  alt="Logo preview"
+                  className="h-16 w-16 rounded-lg object-cover"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{selectedLogo?.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(selectedLogo?.size || 0) / 1024 / 1024 < 1
+                      ? `${((selectedLogo?.size || 0) / 1024).toFixed(1)} KB`
+                      : `${((selectedLogo?.size || 0) / 1024 / 1024).toFixed(
+                          1
+                        )} MB`}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogoRemove}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <FileUpload
+                selectedFile={selectedLogo}
+                onFileSelect={handleLogoSelect}
+                onFileRemove={handleLogoRemove}
+                accept="image/*"
+                maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
+                maxWidth={512}
+                maxHeight={512}
+                placeholder="Upload organization logo (max 512×512px)"
+                disabled={isLoading}
+              />
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="name">Organization Name</Label>
             <Input

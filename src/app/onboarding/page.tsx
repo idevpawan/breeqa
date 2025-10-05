@@ -12,9 +12,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FileUpload } from "@/components/ui/file-upload";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { organizationServiceClient } from "@/lib/services/organization-client";
+import { MediaService } from "@/lib/storage/media-service";
+import { FILE_SIZE_LIMITS } from "@/lib/storage/wasabi-config";
 import { createClient } from "@/lib/supabase/client";
+import { X } from "lucide-react";
 
 export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +28,8 @@ export default function OnboardingPage() {
     slug: "",
     description: "",
   });
+  const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -48,6 +54,23 @@ export default function OnboardingPage() {
         ...prev,
         slug: slug,
       }));
+    }
+  };
+
+  const handleLogoSelect = (file: File) => {
+    setSelectedLogo(file);
+    setError(null);
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setLogoPreview(previewUrl);
+  };
+
+  const handleLogoRemove = () => {
+    setSelectedLogo(null);
+    if (logoPreview) {
+      URL.revokeObjectURL(logoPreview);
+      setLogoPreview(null);
     }
   };
 
@@ -84,8 +107,32 @@ export default function OnboardingPage() {
         throw new Error(response.error || "Failed to create organization");
       }
 
+      // Upload logo if selected
+      if (selectedLogo && response.data) {
+        try {
+          const logoUploadResult = await MediaService.uploadOrganizationLogo(
+            response.data.id,
+            selectedLogo
+          );
+
+          if (logoUploadResult.success && logoUploadResult.publicUrl) {
+            // Update organization with logo URL
+            await organizationServiceClient.updateOrganizationLogo(
+              response.data.id,
+              logoUploadResult.publicUrl
+            );
+          }
+        } catch (logoError) {
+          console.warn(
+            "Logo upload failed, but organization was created:",
+            logoError
+          );
+          // Don't fail the entire process if logo upload fails
+        }
+      }
+
       // Redirect to dashboard
-      router.push("/dashboard");
+      window.location.href = "/";
     } catch (error) {
       console.error("Organization creation error:", error);
       setError(
@@ -154,6 +201,58 @@ export default function OnboardingPage() {
                     <p className="text-sm text-destructive">{error}</p>
                   </div>
                 )}
+
+                {/* Logo Upload Section */}
+                <div className="space-y-2">
+                  <Label>Organization Logo (Optional)</Label>
+                  {logoPreview ? (
+                    <div className="flex items-center space-x-4 p-4 border rounded-lg">
+                      <img
+                        src={logoPreview}
+                        alt="Logo preview"
+                        className="h-16 w-16 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          {selectedLogo?.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(selectedLogo?.size || 0) / 1024 / 1024 < 1
+                            ? `${((selectedLogo?.size || 0) / 1024).toFixed(
+                                1
+                              )} KB`
+                            : `${(
+                                (selectedLogo?.size || 0) /
+                                1024 /
+                                1024
+                              ).toFixed(1)} MB`}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleLogoRemove}
+                        className="h-8 w-8 p-0"
+                        disabled={isLoading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <FileUpload
+                      selectedFile={selectedLogo}
+                      onFileSelect={handleLogoSelect}
+                      onFileRemove={handleLogoRemove}
+                      accept="image/*"
+                      maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
+                      maxWidth={512}
+                      maxHeight={512}
+                      placeholder="Upload organization logo (max 512×512px)"
+                      disabled={isLoading}
+                    />
+                  )}
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="name">Organization Name *</Label>
