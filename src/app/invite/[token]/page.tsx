@@ -29,11 +29,6 @@ export default function InvitePage() {
 
   const token = params.token as string;
 
-  useEffect(() => {
-    checkAuth();
-    loadInvitation();
-  }, [token, checkAuth, loadInvitation]);
-
   const checkAuth = useCallback(async () => {
     const {
       data: { user },
@@ -76,6 +71,11 @@ export default function InvitePage() {
       setIsLoading(false);
     }
   }, [token, supabase]);
+
+  useEffect(() => {
+    checkAuth();
+    loadInvitation();
+  }, [token, checkAuth, loadInvitation]);
 
   const handleAcceptInvitation = async () => {
     if (!isAuthenticated) {

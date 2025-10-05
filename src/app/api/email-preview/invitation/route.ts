@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     const emailHtml = render(InvitationEmail(sampleInvitation));
 
-    return new NextResponse(emailHtml, {
+    return new NextResponse(await emailHtml, {
       headers: {
         "Content-Type": "text/html",
       },
