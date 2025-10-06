@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
-import { organizationServiceClient } from "@/lib/services/organization-client";
 import { OrganizationInvitation } from "@/lib/types/organization";
 
 export default function InvitePage() {
@@ -39,38 +38,26 @@ export default function InvitePage() {
   const loadInvitation = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("organization_invitations")
-        .select(
-          `
-          *,
-          organization:organizations(*),
-          inviter:user_profiles!invited_by(*)
-        `
-        )
-        .eq("token", token)
-        .eq("status", "pending")
-        .single();
+      setError(null);
 
-      if (error || !data) {
-        setError("Invalid or expired invitation");
+      const response = await fetch(
+        `/api/load-invitation?token=${encodeURIComponent(token)}`
+      );
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || "Failed to load invitation");
         return;
       }
 
-      // Check if invitation is expired
-      if (new Date(data.expires_at) < new Date()) {
-        setError("This invitation has expired");
-        return;
-      }
-
-      setInvitation(data);
+      setInvitation(data.data);
     } catch (error) {
       console.error("Error loading invitation:", error);
       setError("Failed to load invitation");
     } finally {
       setIsLoading(false);
     }
-  }, [token, supabase]);
+  }, [token]);
 
   useEffect(() => {
     checkAuth();
@@ -87,22 +74,20 @@ export default function InvitePage() {
 
     try {
       setIsAccepting(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      setError(null);
 
-      if (!user) {
-        setError("You must be logged in to accept this invitation");
-        return;
-      }
+      const response = await fetch("/api/accept-invitation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
 
-      const response = await organizationServiceClient.acceptInvitation(
-        token,
-        user.id
-      );
+      const data = await response.json();
 
-      if (!response.success || !response.data) {
-        setError(response.error || "Failed to accept invitation");
+      if (!response.ok || !data.success) {
+        setError(data.error || "Failed to accept invitation");
         return;
       }
 
