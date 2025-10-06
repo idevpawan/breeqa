@@ -8,7 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import { organizationServiceClient } from "@/lib/services/organization-client";
-import { Project, ApiResponse } from "@/lib/types/organization";
+import { Project, ApiResponse, UserProfile } from "@/lib/types/organization";
 import { useOrganization } from "./organization-context";
 
 interface ProjectContextType {
@@ -75,7 +75,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const createProject = useCallback(
     async (
       name: string,
-      description?: string
+      description?: string,
+      slug?: string,
+      color?: string
     ): Promise<ApiResponse<Project>> => {
       if (!currentOrganization) {
         return {
@@ -90,7 +92,9 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         const response = await organizationServiceClient.createProject(
           currentOrganization.id,
           name,
-          description
+          description,
+          slug,
+          color
         );
 
         if (response.success && response.data) {

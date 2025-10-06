@@ -12,6 +12,7 @@ import {
   InvitationListResponse,
   PERMISSIONS,
   ROLE_HIERARCHY,
+  ProjectMember,
 } from "@/lib/types/organization";
 import { emailService } from "./email-service";
 
@@ -408,7 +409,9 @@ export class OrganizationServiceClient {
   async createProject(
     organizationId: string,
     name: string,
-    description?: string
+    description?: string,
+    slug?: string,
+    color?: string
   ): Promise<ApiResponse<Project>> {
     try {
       const {
@@ -424,6 +427,8 @@ export class OrganizationServiceClient {
           organization_id: organizationId,
           name,
           description,
+          slug,
+          color,
           created_by: user.id,
         })
         .select()
@@ -434,6 +439,79 @@ export class OrganizationServiceClient {
       }
 
       return { data: project, error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Add project member
+  async addProjectMember(
+    projectId: string,
+    userId: string,
+    role: "lead" | "tester" | "observer",
+    permissions: Record<string, boolean> = {}
+  ): Promise<ApiResponse<ProjectMember>> {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/members`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          role,
+          permissions,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          data: null,
+          error: data.error || "Failed to add project member",
+          success: false,
+        };
+      }
+
+      return data;
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Remove project member
+  async removeProjectMember(
+    projectId: string,
+    memberId: string
+  ): Promise<ApiResponse<boolean>> {
+    try {
+      const response = await fetch(
+        `/api/projects/${projectId}/members/${memberId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          data: null,
+          error: data.error || "Failed to remove project member",
+          success: false,
+        };
+      }
+
+      return data;
     } catch (error) {
       return {
         data: null,

@@ -68,15 +68,30 @@ export interface Project {
   id: string;
   organization_id: string;
   name: string;
+  slug: string;
   description?: string;
   status: "active" | "archived" | "completed";
   icon?: string;
+  color?: string;
   created_by?: string;
   created_at: string;
   updated_at: string;
   // Joined data
   organization?: Organization;
   creator?: UserProfile;
+}
+
+export interface ProjectMember {
+  id: string;
+  project_id: string;
+  user_id: string;
+  role: "lead" | "tester" | "observer";
+  permissions: Record<string, boolean>;
+  joined_at: string;
+  invited_by?: string;
+  // Joined data
+  user?: UserProfile;
+  project?: Project;
 }
 
 // Permission system
