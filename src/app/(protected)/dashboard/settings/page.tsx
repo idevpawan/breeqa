@@ -17,6 +17,7 @@ import {
   usePermission,
 } from "@/lib/contexts/organization-context";
 import Link from "next/link";
+import PermissionsMatrix from "@/components/permissions/permissions-matrix";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { organizationServiceClient } from "@/lib/services/organization-client";
@@ -356,6 +357,9 @@ export default function OrganizationSettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Permissions Matrix Preview */}
+          <PermissionsMatrix editable={false} />
 
           {/* Back to Dashboard */}
           <div className="text-center">
