@@ -9,11 +9,14 @@ import {
   CreditCard,
   LayoutDashboard,
   LifeBuoy,
+  History,
   Send,
   Settings2,
   SquareTerminal,
   User,
   Users,
+  BarChart3,
+  Megaphone,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -38,7 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const data = {
     navMain: [
       {
-        title: "Dasboard",
+        title: "Overview",
         url: "/dashboard",
         icon: LayoutDashboard,
         isActive: true,
@@ -49,18 +52,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: CircleDot,
       },
       {
-        title: "Team & Permissions",
+        title: "Members & Permissions",
         url: "/members",
         icon: Users,
       },
       {
-        title: "Billing & Usage",
-        url: "#",
+        title: "Activity Log",
+        url: "/activity",
+        icon: History,
+      },
+      {
+        title: "Billing",
+        url: "/billing",
         icon: CreditCard,
+      },
+      {
+        title: "Usage Analytics",
+        url: "/usage",
+        icon: BarChart3,
       },
       { title: "Settings", url: "#", icon: Settings2 },
     ],
     navSecondary: [
+      {
+        title: "Changelog",
+        url: "/changelog",
+        icon: Megaphone,
+      },
+      {
+        title: "Keyboard Shortcuts",
+        url: "/shortcuts",
+        icon: Command,
+      },
       {
         title: "Support",
         url: "#",
