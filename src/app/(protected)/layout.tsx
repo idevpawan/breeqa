@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ToastProvider } from "@/components/toast-provider";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Page({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
@@ -42,48 +43,53 @@ export default function Page({ children }: { children: React.ReactNode }) {
       >
         <AppSidebar />
         <SidebarInset>
-          <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-3">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {segments.length === 0 ? (
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Home</BreadcrumbPage>
-                  </BreadcrumbItem>
-                ) : (
-                  segments.map((segment, index) => (
-                    <div key={index}>
-                      {index > 0 && (
-                        <BreadcrumbSeparator
-                          key={`sep-${index}`}
-                          className="hidden md:block"
-                        />
-                      )}
-                      <BreadcrumbItem
-                        key={`item-${index}`}
-                        className={
-                          index < segments.length - 1
-                            ? "hidden md:block"
-                            : undefined
-                        }
-                      >
-                        {index < segments.length - 1 ? (
-                          <BreadcrumbLink href={buildHref(index)}>
-                            {toTitle(segment)}
-                          </BreadcrumbLink>
-                        ) : (
-                          <BreadcrumbPage>{toTitle(segment)}</BreadcrumbPage>
+          <header className="bg-background sticky top-0 flex shrink-0 items-center justify-between gap-2 border-b p-3">
+            <div className="flex items-center space-x-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {segments.length === 0 ? (
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Home</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  ) : (
+                    segments.map((segment, index) => (
+                      <div key={index}>
+                        {index > 0 && (
+                          <BreadcrumbSeparator
+                            key={`sep-${index}`}
+                            className="hidden md:block"
+                          />
                         )}
-                      </BreadcrumbItem>
-                    </div>
-                  ))
-                )}
-              </BreadcrumbList>
-            </Breadcrumb>
+                        <BreadcrumbItem
+                          key={`item-${index}`}
+                          className={
+                            index < segments.length - 1
+                              ? "hidden md:block"
+                              : undefined
+                          }
+                        >
+                          {index < segments.length - 1 ? (
+                            <BreadcrumbLink href={buildHref(index)}>
+                              {toTitle(segment)}
+                            </BreadcrumbLink>
+                          ) : (
+                            <BreadcrumbPage>{toTitle(segment)}</BreadcrumbPage>
+                          )}
+                        </BreadcrumbItem>
+                      </div>
+                    ))
+                  )}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div>
+              <ThemeToggle />
+            </div>
           </header>
           {children}
         </SidebarInset>

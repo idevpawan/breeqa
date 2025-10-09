@@ -62,14 +62,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: History,
       },
       {
-        title: "Billing",
+        title: "Billing & Usage",
         url: "/billing",
         icon: CreditCard,
-      },
-      {
-        title: "Usage Analytics",
-        url: "/usage",
-        icon: BarChart3,
       },
       { title: "Settings", url: "#", icon: Settings2 },
     ],
@@ -78,11 +73,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Changelog",
         url: "/changelog",
         icon: Megaphone,
-      },
-      {
-        title: "Keyboard Shortcuts",
-        url: "/shortcuts",
-        icon: Command,
       },
       {
         title: "Support",

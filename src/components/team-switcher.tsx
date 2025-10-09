@@ -39,10 +39,10 @@ export function OrganizationSwitcher() {
   };
 
   // Get organization role display
-  const getOrganizationRole = (orgId: string) => {
-    const membership = memberships.find((m) => m.organization_id === orgId);
-    return membership?.role.toLowerCase() || "viewer";
-  };
+  // const getOrganizationRole = (orgId: string) => {
+  //   const membership = memberships.find((m) => m.organization_id === orgId);
+  //   return membership?.role.toLowerCase() || "viewer";
+  // };
 
   if (isLoading) {
     return (
@@ -125,7 +125,7 @@ export function OrganizationSwitcher() {
                   <DropdownMenuItem
                     key={org.id}
                     onClick={() => switchOrganization(org.id)}
-                    className="gap-2 p-2"
+                    className="gap-2 p-2 "
                   >
                     <div className="flex size-6 capitalize items-center justify-center rounded-md border bg-background">
                       <span className="text-xs font-semibold">
@@ -134,11 +134,10 @@ export function OrganizationSwitcher() {
                     </div>
                     <div className="flex flex-col capitalize">
                       <span className="font-medium">{org.name}</span>
-                      <span className="text-xs text-muted-foreground">
+                      {/* <span className="text-xs text-muted-foreground">
                         {getOrganizationRole(org.id)}
-                      </span>
+                      </span> */}
                     </div>
-                    <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 );
               })}

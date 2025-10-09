@@ -133,11 +133,6 @@ export function NavUser() {
                 <User />
                 Profile
               </DropdownMenuItem>
-              {/* theme switcher */}
-              <DropdownMenuItem className="flex justify-between">
-                <span>Theme</span>
-                <ThemeToggle />
-              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>

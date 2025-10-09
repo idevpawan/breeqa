@@ -42,6 +42,7 @@ export function OrganizationProvider({
       const response = await organizationServiceClient.getUserOrganizations();
 
       if (response.success && response.data) {
+        console.log(response.data.organizations);
         setMemberships(
           response.data.organizations.map((org) => ({
             id: "",
