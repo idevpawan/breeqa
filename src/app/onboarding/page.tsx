@@ -132,7 +132,7 @@ export default function OnboardingPage() {
       }
 
       // Redirect to dashboard
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Organization creation error:", error);
       setError(

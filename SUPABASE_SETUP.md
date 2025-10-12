@@ -1,6 +1,6 @@
 # Supabase Authentication Setup
 
-This project uses Supabase for authentication with GitHub and Google OAuth providers.
+This project uses Supabase for authentication with GitHub and Google OAuth providers, as well as email and password authentication.
 
 ## Setup Instructions
 
@@ -22,7 +22,21 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 You can find these values in your Supabase project dashboard under Settings > API.
 
-### 3. Configure OAuth Providers
+### 3. Configure Authentication Providers
+
+#### Email Authentication Setup
+
+1. In Supabase Dashboard > Authentication > Providers:
+   - Enable **Email** provider (it should be enabled by default)
+   - Configure email templates if needed
+   - Set up email confirmation settings
+
+2. Configure email settings:
+   - **Enable email confirmations**: Recommended for production
+   - **Enable email change confirmations**: Recommended for security
+   - **Enable password reset**: Recommended for user experience
+
+#### OAuth Providers
 
 #### GitHub OAuth Setup
 
@@ -64,8 +78,14 @@ In Supabase Dashboard > Authentication > URL Configuration:
 
 1. Start your development server: `npm run dev`
 2. Go to `http://localhost:3000/auth`
-3. Try logging in with GitHub or Google
-4. You should be redirected to the dashboard after successful authentication
+3. Test email authentication:
+   - Try signing up with a new email and password
+   - Check your email for confirmation link (if enabled)
+   - Try signing in with existing credentials
+4. Test OAuth authentication:
+   - Try logging in with GitHub
+   - Try logging in with Google
+5. You should be redirected to the dashboard after successful authentication
 
 ## File Structure
 
@@ -90,14 +110,17 @@ src/
 
 ## Features
 
+- ✅ Email and password authentication
+- ✅ User signup with full name collection
 - ✅ GitHub OAuth authentication
 - ✅ Google OAuth authentication
 - ✅ Server-side rendering (SSR) support
 - ✅ Protected routes with middleware
 - ✅ Automatic redirects
-- ✅ Error handling
+- ✅ Error handling and validation
 - ✅ Logout functionality
 - ✅ User session management
+- ✅ Email confirmation flow
 
 ## Troubleshooting
 
