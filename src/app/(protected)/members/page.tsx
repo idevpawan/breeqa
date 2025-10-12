@@ -32,7 +32,8 @@ const ROLE_ORDER: UserRole[] = [
 ];
 
 export default function MembersPage() {
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization, isLoading: isLoadingOrganization } =
+    useOrganization();
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -67,8 +68,9 @@ export default function MembersPage() {
   }, [currentOrganization]);
 
   useEffect(() => {
+    if (isLoadingOrganization) return;
     loadMembers();
-  }, [loadMembers]);
+  }, [isLoadingOrganization]);
 
   const filteredMembers = useMemo(() => {
     if (!search) return members;

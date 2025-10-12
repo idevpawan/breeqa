@@ -17,18 +17,13 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">
-                  B
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">BREEQA</span>
+              <span className="text-xl font-bold text-foreground">Breeqa.</span>
             </div>
           </Link>
 
@@ -37,7 +32,7 @@ export function Navbar() {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>Products</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>Features</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="grid gap-3 p-6 w-[400px]">
                       <NavigationMenuLink asChild>
@@ -114,13 +109,12 @@ export function Navbar() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
             <div className="hidden md:flex items-center space-x-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/auth">Sign In</Link>
+              <Button variant="secondary" size="lg" asChild>
+                <Link href="/auth">Login</Link>
               </Button>
-              <Button size="sm" asChild>
-                <Link href="/auth">Get Started</Link>
+              <Button size="lg" asChild className="rounded-full">
+                <Link href="/auth">Try 14 Day Trial</Link>
               </Button>
             </div>
 

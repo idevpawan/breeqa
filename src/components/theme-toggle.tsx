@@ -26,7 +26,7 @@ export function ThemeToggle() {
 
   return (
     <Button
-      className="size-7 cursor-pointer bg-transparent border hover:bg-transparent"
+      className="size-7 cursor-pointer text-foreground bg-transparent border hover:bg-transparent"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
       {theme === "light" ? (

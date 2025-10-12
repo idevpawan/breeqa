@@ -15,35 +15,65 @@ import { createClient } from "@/lib/supabase/client";
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isConfirmationSent, setIsConfirmationSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordResetSent, setIsPasswordResetSent] = useState(false);
   const supabase = createClient();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
   const { toast } = useToast();
 
-  const handleGitHubLogin = async () => {
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${
-            window.location.origin
-          }/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
-        },
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError("Please enter your email address first");
+      toast({
+        title: "Error",
+        description: "Please enter your email address first",
+        variant: "destructive",
       });
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
+      });
+
       if (error) {
-        console.error("GitHub login error:", error);
+        setError(error.message);
+        toast({
+          title: "Password reset failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setIsPasswordResetSent(true);
+        toast({
+          title: "Password reset email sent!",
+          description: `We've sent a password reset link to ${email}. Please check your inbox and follow the instructions.`,
+        });
       }
     } catch (error) {
-      console.error("GitHub login error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -76,18 +106,9 @@ function AuthForm() {
 
     try {
       if (isSignUp) {
-        // Validate passwords match
-        if (password !== confirmPassword) {
-          toast({
-            title: "Error",
-            description: "Passwords do not match",
-            variant: "destructive",
-          });
-          return;
-        }
-
         // Validate password strength
         if (password.length < 6) {
+          setError("Password must be at least 6 characters long");
           toast({
             title: "Error",
             description: "Password must be at least 6 characters long",
@@ -98,6 +119,7 @@ function AuthForm() {
 
         // Validate full name
         if (!fullName.trim()) {
+          setError("Please enter your full name");
           toast({
             title: "Error",
             description: "Please enter your full name",
@@ -117,12 +139,14 @@ function AuthForm() {
         });
 
         if (error) {
+          setError(error.message);
           toast({
             title: "Sign up failed",
             description: error.message,
             variant: "destructive",
           });
         } else {
+          setIsConfirmationSent(true);
           toast({
             title: "Confirmation email sent!",
             description: `We've sent a confirmation link to ${email}. Please check your inbox and click the link to verify your account.`,
@@ -135,6 +159,7 @@ function AuthForm() {
         });
 
         if (error) {
+          setError(error.message);
           toast({
             title: "Sign in failed",
             description: error.message,
@@ -146,6 +171,9 @@ function AuthForm() {
         }
       }
     } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -166,59 +194,22 @@ function AuthForm() {
       <div className="grid lg:grid-cols-2 min-h-screen">
         {/* Left Side - Auth Section */}
         <div className="flex items-center justify-center p-8 lg:p-12">
-          <div className="w-full max-w-md space-y-8">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-xl">
-                    B
-                  </span>
-                </div>
-                <span className="text-2xl font-bold text-foreground">
-                  BREEQA
-                </span>
-              </div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Welcome to BREEQA
-              </h1>
-              <p className="text-muted-foreground">
-                Sign in to your account or create a new one to get started
-              </p>
-            </div>
-
+          <div className="w-full max-w-sm space-y-8">
             {/* Auth Card */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl">Get Started</CardTitle>
-                <CardDescription>
-                  Choose your preferred sign-in method
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* GitHub Login */}
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full h-12 text-base font-medium hover:bg-muted/50 transition-colors"
-                  onClick={handleGitHubLogin}
-                  disabled={isLoading}
-                >
-                  <svg
-                    className="w-5 h-5 mr-3"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                  </svg>
-                  Continue with GitHub
-                </Button>
-
+            <div className="border-0 shadow-none">
+              <div className="space-y-1 text-center mb-4">
+                <p className="text-2xl font-semibold">
+                  {isSignUp ? "Sign up" : "Login"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Login to your account to continue
+                </p>
+              </div>
+              <div className="space-y-4">
                 {/* Google Login */}
                 <Button
                   variant="outline"
-                  size="lg"
-                  className="w-full h-12 text-base font-medium hover:bg-muted/50 transition-colors"
+                  className="w-full h-10 text-base font-medium hover:bg-muted/50 transition-colors"
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
                 >
@@ -255,6 +246,30 @@ function AuthForm() {
                   </div>
                 </div>
 
+                {error && <div className="text-red-500 text-sm">{error}</div>}
+
+                {isPasswordResetSent && (
+                  <div className="text-green-600 text-sm bg-green-50 dark:bg-green-900/20 p-3 rounded-md border border-green-200 dark:border-green-800">
+                    <div className="flex items-center space-x-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>
+                        Password reset email sent! Check your inbox for
+                        instructions.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Email Auth Form */}
                 <form onSubmit={handleEmailAuth} className="space-y-4">
                   {isSignUp && (
@@ -287,36 +302,50 @@ function AuthForm() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={isLoading}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
-                  {isSignUp && (
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        placeholder="Confirm your password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required={isSignUp}
+                  {/* Forgot Password Link - Only show during login */}
+                  {!isSignUp && (
+                    <div className="text-right">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-sm text-primary hover:underline"
                         disabled={isLoading}
-                      />
+                      >
+                        Forgot password?
+                      </button>
                     </div>
                   )}
 
                   <Button
                     type="submit"
-                    size="lg"
-                    className="w-full h-12 text-base font-medium"
+                    size="default"
+                    className="w-full h-10 text-base font-medium"
                     disabled={isLoading}
                   >
                     <svg
@@ -336,6 +365,18 @@ function AuthForm() {
                   </Button>
                 </form>
 
+                {/* Footer */}
+                <div className="text-center text-[10px] text-muted-foreground">
+                  By continuing, you agree to our{" "}
+                  <a href="#" className="text-primary hover:underline">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="#" className="text-primary hover:underline">
+                    Privacy Policy
+                  </a>
+                </div>
+
                 {/* Toggle between sign up and sign in */}
                 <div className="text-center">
                   <button
@@ -345,9 +386,11 @@ function AuthForm() {
                       setEmail("");
                       setPassword("");
                       setFullName("");
-                      setConfirmPassword("");
+                      setShowPassword(false);
+                      setError(null);
+                      setIsPasswordResetSent(false);
                     }}
-                    className="text-sm text-primary hover:underline"
+                    className="text-sm text-primary cursor-pointer hover:underline"
                     disabled={isLoading}
                   >
                     {isSignUp
@@ -355,19 +398,7 @@ function AuthForm() {
                       : "Don't have an account? Sign up"}
                   </button>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Footer */}
-            <div className="text-center text-sm text-muted-foreground">
-              By continuing, you agree to our{" "}
-              <a href="#" className="text-primary hover:underline">
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a href="#" className="text-primary hover:underline">
-                Privacy Policy
-              </a>
+              </div>
             </div>
           </div>
         </div>
