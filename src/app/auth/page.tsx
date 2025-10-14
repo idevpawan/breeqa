@@ -19,7 +19,6 @@ import { Eye, EyeOff } from "lucide-react";
 
 function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [isConfirmationSent, setIsConfirmationSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,8 +28,10 @@ function AuthForm() {
   const [isPasswordResetSent, setIsPasswordResetSent] = useState(false);
   const supabase = createClient();
   const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
   const { toast } = useToast();
+  const [isSignUp, setIsSignUp] = useState(mode === "signup");
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
@@ -297,6 +298,7 @@ function AuthForm() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       disabled={isLoading}
+                      autoComplete="off"
                     />
                   </div>
 
@@ -311,6 +313,7 @@ function AuthForm() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         disabled={isLoading}
+                        autoComplete="off"
                         className="pr-10"
                       />
                       <button
@@ -389,6 +392,11 @@ function AuthForm() {
                       setShowPassword(false);
                       setError(null);
                       setIsPasswordResetSent(false);
+                      window.history.replaceState(
+                        {},
+                        "",
+                        `${window.location.pathname}?${isSignUp ? "mode=login" : "mode=signup"}`
+                      );
                     }}
                     className="text-sm text-primary cursor-pointer hover:underline"
                     disabled={isLoading}
