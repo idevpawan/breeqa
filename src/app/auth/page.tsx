@@ -40,6 +40,9 @@ function AuthForm() {
           redirectTo: `${
             window.location.origin
           }/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
+          queryParams: {
+            prompt: "consent",
+          },
         },
       });
       if (error) {
