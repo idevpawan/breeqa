@@ -1,14 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // List pending invitations for an organization (admin/manager)
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const organizationId = params.id;
+    const { id: organizationId } = await context.params;
 
     const {
       data: { user },

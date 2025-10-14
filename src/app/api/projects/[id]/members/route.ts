@@ -1,14 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { ProjectMember } from "@/lib/types/organization";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const projectId = params.id;
+    const { id: projectId } = await context.params;
 
     // Get project members with user details
     const { data: members, error } = await supabase
@@ -44,12 +44,12 @@ export async function GET(
 }
 
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const projectId = params.id;
+    const { id: projectId } = await context.params;
     const body = await request.json();
     const { userId, role, permissions = {} } = body;
 

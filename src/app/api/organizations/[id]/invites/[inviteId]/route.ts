@@ -1,15 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // Revoke an invitation (admin/manager)
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string; inviteId: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; inviteId: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const organizationId = params.id;
-    const inviteId = params.inviteId;
+    const { id: organizationId, inviteId } = await context.params;
 
     const {
       data: { user },

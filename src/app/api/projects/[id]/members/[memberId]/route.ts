@@ -1,14 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string; memberId: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; memberId: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const projectId = params.id;
-    const memberId = params.memberId;
+    const { id: projectId, memberId } = await context.params;
 
     // Verify user has permission to remove members from this project
     const { data: project } = await supabase

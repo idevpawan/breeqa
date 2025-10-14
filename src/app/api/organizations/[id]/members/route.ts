@@ -1,14 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { OrganizationMember } from "@/lib/types/organization";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const organizationId = params.id;
+    const { id: organizationId } = await context.params;
 
     // Get organization members with user details
     const { data: members, error } = await supabase

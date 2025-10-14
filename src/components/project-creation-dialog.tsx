@@ -186,9 +186,7 @@ export function ProjectCreationDialog({
     try {
       const response = await createProject(
         formData.name.trim(),
-        formData.description.trim() || undefined,
-        formData.slug.trim() || undefined,
-        formData.color
+        formData.description.trim() || undefined
       );
 
       if (!response.success || !response.data) {

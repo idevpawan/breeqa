@@ -1,16 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { UserRole } from "@/lib/types/organization";
 
 // Update a member's role (admin only)
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string; userId: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; userId: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const organizationId = params.id;
-    const targetUserId = params.userId;
+    const { id: organizationId, userId: targetUserId } = await context.params;
     const body = await request.json();
     const newRole = body?.role as UserRole | undefined;
 
@@ -78,13 +77,12 @@ export async function PATCH(
 
 // Suspend (remove) a member (admin or manager)
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string; userId: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string; userId: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const organizationId = params.id;
-    const targetUserId = params.userId;
+    const { id: organizationId, userId: targetUserId } = await context.params;
 
     const {
       data: { user },
