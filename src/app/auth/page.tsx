@@ -84,6 +84,7 @@ function AuthForm() {
           email,
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
             data: {
               full_name: fullName.trim(),
             },

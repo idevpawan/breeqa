@@ -2,6 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // If Supabase returns to any path with ?code=..., normalize to /auth/callback
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && !request.nextUrl.pathname.startsWith("/auth/callback")) {
+    const callbackUrl = request.nextUrl.clone();
+    callbackUrl.pathname = "/auth/callback";
+    // preserve all query params (code, type, returnUrl/next if present)
+    return NextResponse.redirect(callbackUrl);
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -38,10 +47,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Define public routes that authenticated users shouldn't access
-  const publicRoutes = ["/", "/auth", "/invite"];
+  const publicRoutes = ["/", "/auth", "/invite", "/auth/reset-password"];
   const isPublicRoute =
     publicRoutes.includes(request.nextUrl.pathname) ||
-    request.nextUrl.pathname.startsWith("/invite/");
+    request.nextUrl.pathname.startsWith("/invite/") ||
+    request.nextUrl.pathname.startsWith("/auth/reset-password");
 
   // Protected routes - redirect unauthenticated users to auth
   if (request.nextUrl.pathname.startsWith("/dashboard") && !user) {
@@ -86,7 +96,8 @@ export async function middleware(request: NextRequest) {
   if (
     isPublicRoute &&
     user &&
-    !request.nextUrl.pathname.startsWith("/invite/")
+    !request.nextUrl.pathname.startsWith("/invite/") &&
+    !request.nextUrl.pathname.startsWith("/auth/reset-password")
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";

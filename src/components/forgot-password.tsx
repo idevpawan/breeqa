@@ -55,7 +55,7 @@ export function ForgotPassword({
     try {
       // Send password reset email - Supabase will handle email validation internally
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`,
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery&returnUrl=${encodeURIComponent("/auth/reset-password")}`,
       });
 
       if (error) {

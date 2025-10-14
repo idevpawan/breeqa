@@ -9,7 +9,11 @@ export async function GET(request: Request) {
   // Check for returnUrl parameter first, then fallback to next, then dashboard
   const returnUrl = searchParams.get("returnUrl");
   const next = searchParams.get("next");
-  const redirectTo = returnUrl || next || "/dashboard";
+  // If this is a recovery flow and no returnUrl provided, send to reset-password page
+  const redirectTo =
+    returnUrl ||
+    next ||
+    (type === "recovery" ? "/auth/reset-password" : "/dashboard");
 
   if (code) {
     const supabase = await createClient();
