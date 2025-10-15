@@ -280,18 +280,8 @@ export class OrganizationServiceClient {
         return { data: null, error: error.message, success: false };
       }
 
-      // Send invitation email
-      try {
-        const emailResult = await emailService.sendInvitationEmail(invitation);
-        if (!emailResult.success) {
-          console.warn("Failed to send invitation email:", emailResult.error);
-          // Don't fail the invitation creation if email fails
-          // The invitation is still created in the database
-        }
-      } catch (emailError) {
-        console.warn("Email service error:", emailError);
-        // Don't fail the invitation creation if email fails
-      }
+      // Note: Email sending is handled server-side via API routes
+      // to avoid CORS issues with Resend
 
       return { data: invitation, error: null, success: true };
     } catch (error) {

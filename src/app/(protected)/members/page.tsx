@@ -20,7 +20,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { organizationServiceClient } from "@/lib/services/organization-client";
 
 const ROLE_ORDER: UserRole[] = [
   "admin",
@@ -143,15 +142,30 @@ export default function MembersPage() {
     setIsInviting(true);
     setInviteError(null);
     try {
-      const resp = await organizationServiceClient.inviteUser(
-        currentOrganization.id,
-        inviteEmail.trim(),
-        inviteRole
-      );
-      if (!resp.success) throw new Error(resp.error || "Failed to invite");
-      setInviteOpen(false);
-      setInviteEmail("");
-      setInviteRole("viewer");
+      const response = await fetch("/api/invite-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: inviteEmail.trim(),
+          role: inviteRole,
+          organizationId: currentOrganization.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setInviteOpen(false);
+        setInviteEmail("");
+        setInviteRole("viewer");
+        // Refresh the members list
+        loadMembers();
+      } else {
+        throw new Error(data.error || "Failed to send invite");
+      }
     } catch (e) {
       setInviteError(e instanceof Error ? e.message : "Failed to send invite");
     } finally {
