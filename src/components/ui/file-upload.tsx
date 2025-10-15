@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Upload, X, File, Image, AlertCircle } from "lucide-react";
+import { Upload, X, File, Image, AlertCircle, CameraIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MediaUtils } from "@/lib/storage/media-service";
@@ -18,6 +18,7 @@ export interface FileUploadProps {
   className?: string;
   placeholder?: string;
   error?: string;
+  onError?: (error: string) => void;
 }
 
 export function FileUpload({
@@ -32,6 +33,7 @@ export function FileUpload({
   className,
   placeholder = "Click to upload or drag and drop",
   error,
+  onError,
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [validationError, setValidationError] = React.useState<string | null>(
@@ -47,6 +49,9 @@ export function FileUpload({
       setValidationError(
         `File size must be less than ${MediaUtils.formatFileSize(maxSize)}`
       );
+      onError?.(
+        `File size must be less than ${MediaUtils.formatFileSize(maxSize)}`
+      );
       return;
     }
 
@@ -59,6 +64,11 @@ export function FileUpload({
       );
       if (!isValidDimensions) {
         setValidationError(
+          `Image dimensions must be ${maxWidth ? `≤ ${maxWidth}px wide` : ""}${
+            maxWidth && maxHeight ? " and " : ""
+          }${maxHeight ? `≤ ${maxHeight}px tall` : ""}`
+        );
+        onError?.(
           `Image dimensions must be ${maxWidth ? `≤ ${maxWidth}px wide` : ""}${
             maxWidth && maxHeight ? " and " : ""
           }${maxHeight ? `≤ ${maxHeight}px tall` : ""}`
@@ -120,82 +130,37 @@ export function FileUpload({
   const displayError = error || validationError;
 
   return (
-    <div className={cn("w-full", className)}>
-      <div
-        className={cn(
-          "relative border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer",
-          isDragOver && !disabled && "border-primary bg-primary/5",
-          disabled && "opacity-50 cursor-not-allowed",
-          displayError && "border-destructive",
-          !displayError &&
-            !disabled &&
-            "border-muted-foreground/25 hover:border-muted-foreground/50"
-        )}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={handleClick}
-      >
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={accept}
-          onChange={handleFileInputChange}
-          disabled={disabled}
-          className="hidden"
-        />
+    <div>
+      <div className={cn("w-32 h-32", className)}>
+        <div
+          className={cn(
+            "relative border-2 border-dashed p-4 rounded-full transition-colors cursor-pointer w-32 h-32",
+            isDragOver && !disabled && "border-primary bg-primary/5",
+            disabled && "opacity-50 cursor-not-allowed",
+            displayError && "border-destructive",
+            !displayError &&
+              !disabled &&
+              "border-muted-foreground/25 hover:border-muted-foreground/50"
+          )}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={handleClick}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            onChange={handleFileInputChange}
+            disabled={disabled}
+            className="hidden"
+          />
 
-        {selectedFile ? (
-          <div className="flex items-center space-x-3">
-            {MediaUtils.isImage(selectedFile.type) ? (
-              <Image className="h-8 w-8 text-primary" />
-            ) : (
-              <File className="h-8 w-8 text-primary" />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {selectedFile.name}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {MediaUtils.formatFileSize(selectedFile.size)}
-              </p>
-            </div>
-            {!disabled && onFileRemove && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleRemove}
-                className="h-6 w-6 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+          <div className="text-center flex items-center justify-center mx-auto h-full">
+            <CameraIcon className="h-8 w-8 text-muted-foreground " />
           </div>
-        ) : (
-          <div className="text-center">
-            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground mb-1">{placeholder}</p>
-            {maxSize && (
-              <p className="text-xs text-muted-foreground">
-                Max size: {MediaUtils.formatFileSize(maxSize)}
-              </p>
-            )}
-            {maxWidth && maxHeight && (
-              <p className="text-xs text-muted-foreground">
-                Max dimensions: {maxWidth}×{maxHeight}px
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {displayError && (
-        <div className="flex items-center space-x-2 mt-2 text-sm text-destructive">
-          <AlertCircle className="h-4 w-4" />
-          <span>{displayError}</span>
         </div>
-      )}
+      </div>
     </div>
   );
 }

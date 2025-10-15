@@ -18,7 +18,8 @@ import { organizationServiceClient } from "@/lib/services/organization-client";
 import { MediaService } from "@/lib/storage/media-service";
 import { FILE_SIZE_LIMITS } from "@/lib/storage/wasabi-config";
 import { createClient } from "@/lib/supabase/client";
-import { X } from "lucide-react";
+import { Building2, CameraIcon, X } from "lucide-react";
+import Image from "next/image";
 
 export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -149,112 +150,247 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">
-                  B
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">BREEQA</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
-          </div>
+    // <div className="min-h-screen bg-background">
+    //   {/* Main Content */}
+    //   <div className="container mx-auto px-4 py-8">
+    //     <div className="max-w-2xl mx-auto">
+    //       <Card>
+    //         <CardHeader>
+    //           <CardTitle>Create Your Organization</CardTitle>
+    //           <CardDescription>
+    //             Every user needs to be part of an organization to access the
+    //             dashboard. You&apos;ll be the admin of this organization and can
+    //             invite team members later.
+    //           </CardDescription>
+    //         </CardHeader>
+    //         <CardContent>
+    //           <form onSubmit={handleSubmit} className="space-y-6">
+    //             {error && (
+    //               <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+    //                 <p className="text-sm text-destructive">{error}</p>
+    //               </div>
+    //             )}
+
+    //             {/* Logo Upload Section */}
+    //             <div className="space-y-2">
+    //               <Label>Organization Logo (Optional)</Label>
+    //               {logoPreview ? (
+    //                 <div className="flex items-center space-x-4 p-4 border rounded-lg">
+    //                   <img
+    //                     src={logoPreview}
+    //                     alt="Logo preview"
+    //                     className="h-16 w-16 rounded-lg object-cover"
+    //                   />
+    //                   <div className="flex-1">
+    //                     <p className="text-sm font-medium">
+    //                       {selectedLogo?.name}
+    //                     </p>
+    //                     <p className="text-xs text-muted-foreground">
+    //                       {(selectedLogo?.size || 0) / 1024 / 1024 < 1
+    //                         ? `${((selectedLogo?.size || 0) / 1024).toFixed(
+    //                             1
+    //                           )} KB`
+    //                         : `${(
+    //                             (selectedLogo?.size || 0) /
+    //                             1024 /
+    //                             1024
+    //                           ).toFixed(1)} MB`}
+    //                     </p>
+    //                   </div>
+    //                   <Button
+    //                     type="button"
+    //                     variant="ghost"
+    //                     size="sm"
+    //                     onClick={handleLogoRemove}
+    //                     className="h-8 w-8 p-0"
+    //                     disabled={isLoading}
+    //                   >
+    //                     <X className="h-4 w-4" />
+    //                   </Button>
+    //                 </div>
+    //               ) : (
+    //                 <FileUpload
+    //                   selectedFile={selectedLogo}
+    //                   onFileSelect={handleLogoSelect}
+    //                   onFileRemove={handleLogoRemove}
+    //                   accept="image/*"
+    //                   maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
+    //                   maxWidth={512}
+    //                   maxHeight={512}
+    //                   placeholder="Upload organization logo (max 512×512px)"
+    //                   disabled={isLoading}
+    //                 />
+    //               )}
+    //             </div>
+
+    //             <div className="space-y-2">
+    //               <Label htmlFor="name">Organization Name *</Label>
+    //               <Input
+    //                 id="name"
+    //                 name="name"
+    //                 type="text"
+    //                 placeholder="Acme Inc."
+    //                 value={formData.name}
+    //                 onChange={handleInputChange}
+    //                 required
+    //                 disabled={isLoading}
+    //               />
+    //               <p className="text-xs text-muted-foreground">
+    //                 This will be the display name for your organization.
+    //               </p>
+    //             </div>
+
+    //             <div className="space-y-2">
+    //               <Label htmlFor="slug">Organization Slug *</Label>
+    //               <Input
+    //                 id="slug"
+    //                 name="slug"
+    //                 type="text"
+    //                 placeholder="acme-inc"
+    //                 value={formData.slug}
+    //                 onChange={handleInputChange}
+    //                 required
+    //                 disabled={isLoading}
+    //               />
+    //               <p className="text-xs text-muted-foreground">
+    //                 This will be used in URLs and must be unique. Only lowercase
+    //                 letters, numbers, and hyphens allowed.
+    //               </p>
+    //             </div>
+
+    //             <div className="space-y-2">
+    //               <Label htmlFor="description">Description (Optional)</Label>
+    //               <textarea
+    //                 id="description"
+    //                 name="description"
+    //                 placeholder="A brief description of your organization..."
+    //                 value={formData.description}
+    //                 onChange={handleInputChange}
+    //                 disabled={isLoading}
+    //                 className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    //                 rows={3}
+    //               />
+    //             </div>
+
+    //             <div className="flex items-center justify-between pt-4">
+    //               <div className="text-sm text-muted-foreground">
+    //                 By creating an organization, you agree to our{" "}
+    //                 <a href="#" className="text-primary hover:underline">
+    //                   Terms of Service
+    //                 </a>{" "}
+    //                 and{" "}
+    //                 <a href="#" className="text-primary hover:underline">
+    //                   Privacy Policy
+    //                 </a>
+    //               </div>
+    //               <Button type="submit" disabled={isLoading}>
+    //                 {isLoading ? "Creating..." : "Create Organization"}
+    //               </Button>
+    //             </div>
+    //           </form>
+    //         </CardContent>
+    //       </Card>
+
+    //       {/* Info Cards */}
+    //       <div className="grid md:grid-cols-2 gap-6 mt-8">
+    //         <Card>
+    //           <CardHeader>
+    //             <CardTitle className="flex items-center space-x-2">
+    //               <div className="w-3 h-3 bg-chart-1 rounded-full"></div>
+    //               <span>Admin Access</span>
+    //             </CardTitle>
+    //             <CardDescription>
+    //               As the creator, you&apos;ll have full admin access to manage
+    //               your organization.
+    //             </CardDescription>
+    //           </CardHeader>
+    //         </Card>
+
+    //         <Card>
+    //           <CardHeader>
+    //             <CardTitle className="flex items-center space-x-2">
+    //               <div className="w-3 h-3 bg-chart-2 rounded-full"></div>
+    //               <span>Team Invitations</span>
+    //             </CardTitle>
+    //             <CardDescription>
+    //               Invite team members with different roles: developers,
+    //               designers, QA, managers, and viewers.
+    //             </CardDescription>
+    //           </CardHeader>
+    //         </Card>
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
+    <div>
+      <nav className="absolute top-0 z-20 px-10 left-0 right-0 h-16 flex items-center justify-between">
+        <p className="text-xl font-bold">Breeqa.</p>
+        <div className="flex items-center space-x-6">
+          <ThemeToggle />
+          <Button
+            onClick={handleSignOut}
+            variant="ghost"
+            size="icon"
+            className="text-sm"
+          >
+            Logout
+          </Button>
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center space-y-4 mb-8">
-            <h1 className="text-4xl font-bold text-foreground">
-              Welcome to BREEQA!
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Let&apos;s get you set up with your first organization to start
-              managing projects and issues.
-            </p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Create Your Organization</CardTitle>
-              <CardDescription>
-                Every user needs to be part of an organization to access the
-                dashboard. You&apos;ll be the admin of this organization and can
-                invite team members later.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                  <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <p className="text-sm text-destructive">{error}</p>
-                  </div>
-                )}
-
-                {/* Logo Upload Section */}
-                <div className="space-y-2">
-                  <Label>Organization Logo (Optional)</Label>
-                  {logoPreview ? (
-                    <div className="flex items-center space-x-4 p-4 border rounded-lg">
-                      <img
-                        src={logoPreview}
-                        alt="Logo preview"
-                        className="h-16 w-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">
-                          {selectedLogo?.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {(selectedLogo?.size || 0) / 1024 / 1024 < 1
-                            ? `${((selectedLogo?.size || 0) / 1024).toFixed(
-                                1
-                              )} KB`
-                            : `${(
-                                (selectedLogo?.size || 0) /
-                                1024 /
-                                1024
-                              ).toFixed(1)} MB`}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleLogoRemove}
-                        className="h-8 w-8 p-0"
-                        disabled={isLoading}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <FileUpload
-                      selectedFile={selectedLogo}
-                      onFileSelect={handleLogoSelect}
-                      onFileRemove={handleLogoRemove}
-                      accept="image/*"
-                      maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
-                      maxWidth={512}
-                      maxHeight={512}
-                      placeholder="Upload organization logo (max 512×512px)"
-                      disabled={isLoading}
+      </nav>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="col-span-1 p-4 h-screen flex items-center justify-center">
+          <form onSubmit={handleSubmit} className="space-y-6 max-w-md w-full">
+            {error && (
+              <ul className="list-disc list-inside">
+                <li className="text-sm text-destructive">{error}</li>
+              </ul>
+            )}
+            {/* Logo Upload Section */}
+            <div className="space-y-2 grid grid-cols-12 items-center space-x-4">
+              <div className="space-y-2 col-span-4">
+                {logoPreview ? (
+                  <div className="flex relative overflow-hidden justify-center w-32 h-32 items-center rounded-full space-x-4  border-2 border-dashed">
+                    <Image
+                      width={128}
+                      height={128}
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="object-cover h-full w-full"
                     />
-                  )}
-                </div>
-
-                <div className="space-y-2">
+                  </div>
+                ) : (
+                  <FileUpload
+                    selectedFile={selectedLogo}
+                    onFileSelect={handleLogoSelect}
+                    onFileRemove={handleLogoRemove}
+                    accept="image/*"
+                    maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
+                    maxWidth={512}
+                    maxHeight={512}
+                    placeholder="Upload organization logo (max 512x512px)"
+                    disabled={isLoading}
+                    onError={setError}
+                  />
+                )}
+                {logoPreview ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogoRemove}
+                    className="text-xs -mt-4 text-center font-normal text-muted-foreground w-full"
+                    disabled={isLoading}
+                  >
+                    Remove Logo
+                  </Button>
+                ) : (
+                  <Label className="text-xs text-center font-normal text-muted-foreground w-full">
+                    Org. Logo (Optional)
+                  </Label>
+                )}
+              </div>
+              <div className="col-span-8 space-y-4">
+                <div className="space-y-2 col-span-8">
                   <Label htmlFor="name">Organization Name *</Label>
                   <Input
                     id="name"
@@ -270,7 +406,6 @@ export default function OnboardingPage() {
                     This will be the display name for your organization.
                   </p>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="slug">Organization Slug *</Label>
                   <Input
@@ -288,67 +423,48 @@ export default function OnboardingPage() {
                     letters, numbers, and hyphens allowed.
                   </p>
                 </div>
+              </div>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description (Optional)</Label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    placeholder="A brief description of your organization..."
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    disabled={isLoading}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    rows={3}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-4">
-                  <div className="text-sm text-muted-foreground">
-                    By creating an organization, you agree to our{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      Terms of Service
-                    </a>{" "}
-                    and{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      Privacy Policy
-                    </a>
-                  </div>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Creating..." : "Create Organization"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Info Cards */}
-          <div className="grid md:grid-cols-2 gap-6 mt-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-chart-1 rounded-full"></div>
-                  <span>Admin Access</span>
-                </CardTitle>
-                <CardDescription>
-                  As the creator, you&apos;ll have full admin access to manage
-                  your organization.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-chart-2 rounded-full"></div>
-                  <span>Team Invitations</span>
-                </CardTitle>
-                <CardDescription>
-                  Invite team members with different roles: developers,
-                  designers, QA, managers, and viewers.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <textarea
+                id="description"
+                name="description"
+                placeholder="A brief description of your organization..."
+                value={formData.description}
+                onChange={handleInputChange}
+                disabled={isLoading}
+                className="w-full resize-none px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                rows={3}
+              />
+            </div>
+            <div className="flex items-center justify-between pt-4">
+              <div className="text-sm text-muted-foreground">
+                By creating an organization, you agree to our{" "}
+                <a href="#" className="text-primary hover:underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="#" className="text-primary hover:underline">
+                  Privacy Policy
+                </a>
+              </div>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Organization"}
+              </Button>
+            </div>
+          </form>
+        </div>
+        <div className="col-span-1 bg-gray-100 dark:bg-gray-900 p-4 h-screen flex items-center justify-center">
+          <div className="max-w-md w-full space-y-4">
+            <Building2 className="w-10 h-10" />
+            <h1 className="text-2xl font-bold">Create Your Organization</h1>
+            <p className="text-sm text-muted-foreground">
+              Every user needs to be part of an organization to access the
+              dashboard. You&apos;ll be the admin of this organization and can
+              invite team members later.
+            </p>
           </div>
         </div>
       </div>
