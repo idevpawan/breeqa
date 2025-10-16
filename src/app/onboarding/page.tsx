@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,17 @@ import { organizationServiceClient } from "@/lib/services/organization-client";
 import { MediaService } from "@/lib/storage/media-service";
 import { FILE_SIZE_LIMITS } from "@/lib/storage/wasabi-config";
 import { createClient } from "@/lib/supabase/client";
-import { Building2, CameraIcon, X } from "lucide-react";
+import {
+  Building2,
+  CameraIcon,
+  X,
+  Mail,
+  Check,
+  Clock,
+  User,
+} from "lucide-react";
 import Image from "next/image";
+import { OrganizationInvitation } from "@/lib/types/organization";
 
 export default function OnboardingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +40,12 @@ export default function OnboardingPage() {
   });
   const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [invitations, setInvitations] = useState<OrganizationInvitation[]>([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(true);
+  const [acceptingInvitation, setAcceptingInvitation] = useState<string | null>(
+    null
+  );
+  const [showCreateOrg, setShowCreateOrg] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -144,10 +159,80 @@ export default function OnboardingPage() {
     }
   };
 
+  // Load user invitations on component mount
+  useEffect(() => {
+    const loadInvitations = async () => {
+      try {
+        const response = await organizationServiceClient.getUserInvitations();
+        if (response.success && response.data) {
+          setInvitations(response.data);
+          // If user has invitations, show invitations view by default
+          setShowCreateOrg(response.data.length === 0);
+        }
+      } catch (error) {
+        console.error("Error loading invitations:", error);
+        // If error loading invitations, show create org view
+        setShowCreateOrg(true);
+      } finally {
+        setLoadingInvitations(false);
+      }
+    };
+
+    loadInvitations();
+  }, []);
+
+  const handleAcceptInvitation = async (invitation: OrganizationInvitation) => {
+    setAcceptingInvitation(invitation.id);
+    setError(null);
+
+    try {
+      const response = await organizationServiceClient.acceptInvitation(
+        invitation.token
+      );
+
+      if (response.success) {
+        // Remove the accepted invitation from the list
+        setInvitations((prev) =>
+          prev.filter((inv) => inv.id !== invitation.id)
+        );
+        // Redirect to dashboard
+        window.location.href = "/dashboard";
+      } else {
+        setError(response.error || "Failed to accept invitation");
+      }
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
+      setError("Failed to accept invitation");
+    } finally {
+      setAcceptingInvitation(null);
+    }
+  };
+
+  const formatExpiryDate = (expiresAt: string) => {
+    const date = new Date(expiresAt);
+    const now = new Date();
+    const diffTime = date.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) return "Expired";
+    if (diffDays === 1) return "Expires tomorrow";
+    return `Expires in ${diffDays} days`;
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/");
   };
+
+  if (isLoading || loadingInvitations) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     // <div className="min-h-screen bg-background">
@@ -339,132 +424,293 @@ export default function OnboardingPage() {
       </nav>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="col-span-1 p-4 h-screen flex items-center justify-center">
-          <form onSubmit={handleSubmit} className="space-y-6 max-w-md w-full">
-            {error && (
-              <ul className="list-disc list-inside">
-                <li className="text-sm text-destructive">{error}</li>
-              </ul>
-            )}
-            {/* Logo Upload Section */}
-            <div className="space-y-2 grid grid-cols-12 items-center space-x-4">
-              <div className="space-y-2 col-span-4">
-                {logoPreview ? (
-                  <div className="flex relative overflow-hidden justify-center w-32 h-32 items-center rounded-full space-x-4  border-2 border-dashed">
-                    <Image
-                      width={128}
-                      height={128}
-                      src={logoPreview}
-                      alt="Logo preview"
-                      className="object-cover h-full w-full"
-                    />
+          <div className="space-y-6 max-w-md w-full">
+            {/* Loading State */}
+            {loadingInvitations ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <>
+                {/* Toggle Button - Only show if user has invitations */}
+                {invitations.length > 0 && (
+                  <div className="flex justify-center items-center gap-4 mb-6">
+                    <div className="bg-muted rounded-lg p-1 flex">
+                      <Button
+                        variant={!showCreateOrg ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setShowCreateOrg(false)}
+                        className="px-4"
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        View Invitations ({invitations.length})
+                      </Button>
+                      <Button
+                        variant={showCreateOrg ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setShowCreateOrg(true)}
+                        className="px-4"
+                      >
+                        <Building2 className="h-4 w-4 mr-2" />
+                        Create Organization
+                      </Button>
+                    </div>
                   </div>
-                ) : (
-                  <FileUpload
-                    selectedFile={selectedLogo}
-                    onFileSelect={handleLogoSelect}
-                    onFileRemove={handleLogoRemove}
-                    accept="image/*"
-                    maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
-                    maxWidth={512}
-                    maxHeight={512}
-                    placeholder="Upload organization logo (max 512x512px)"
-                    disabled={isLoading}
-                    onError={setError}
-                  />
                 )}
-                {logoPreview ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogoRemove}
-                    className="text-xs -mt-4 text-center font-normal text-muted-foreground w-full"
-                    disabled={isLoading}
-                  >
-                    Remove Logo
-                  </Button>
-                ) : (
-                  <Label className="text-xs text-center font-normal text-muted-foreground w-full">
-                    Org. Logo (Optional)
-                  </Label>
-                )}
-              </div>
-              <div className="col-span-8 space-y-4">
-                <div className="space-y-2 col-span-8">
-                  <Label htmlFor="name">Organization Name *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Acme Inc."
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This will be the display name for your organization.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Organization Slug *</Label>
-                  <Input
-                    id="slug"
-                    name="slug"
-                    type="text"
-                    placeholder="acme-inc"
-                    value={formData.slug}
-                    onChange={handleInputChange}
-                    required
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    This will be used in URLs and must be unique. Only lowercase
-                    letters, numbers, and hyphens allowed.
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <textarea
-                id="description"
-                name="description"
-                placeholder="A brief description of your organization..."
-                value={formData.description}
-                onChange={handleInputChange}
-                disabled={isLoading}
-                className="w-full resize-none px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                rows={3}
-              />
-            </div>
-            <div className="flex items-center justify-between pt-4">
-              <div className="text-sm text-muted-foreground">
-                By creating an organization, you agree to our{" "}
-                <a href="#" className="text-primary hover:underline">
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a href="#" className="text-primary hover:underline">
-                  Privacy Policy
-                </a>
-              </div>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create Organization"}
-              </Button>
-            </div>
-          </form>
+                {/* Invitations View */}
+                {!showCreateOrg && invitations.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Mail className="h-5 w-5" />
+                        <span>Pending Invitations</span>
+                      </CardTitle>
+                      <CardDescription>
+                        You have been invited to join {invitations.length}{" "}
+                        organization{invitations.length > 1 ? "s" : ""}. Accept
+                        an invitation to get started.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {invitations.map((invitation) => (
+                        <div
+                          key={invitation.id}
+                          className="flex items-center justify-between p-4 border rounded-lg"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              {invitation.organization?.logo_url ? (
+                                <Image
+                                  src={invitation.organization.logo_url}
+                                  alt={invitation.organization.name}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                  <Building2 className="h-5 w-5 text-primary" />
+                                </div>
+                              )}
+                              <div>
+                                <h4 className="font-medium">
+                                  {invitation.organization?.name}
+                                </h4>
+                                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                  <span className="flex items-center space-x-1">
+                                    <User className="h-3 w-3" />
+                                    <span className="capitalize">
+                                      {invitation.role}
+                                    </span>
+                                  </span>
+                                  <span className="flex items-center space-x-1">
+                                    <Clock className="h-3 w-3" />
+                                    <span>
+                                      {formatExpiryDate(invitation.expires_at)}
+                                    </span>
+                                  </span>
+                                </div>
+                                {invitation.inviter && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    Invited by{" "}
+                                    {invitation.inviter.full_name ||
+                                      invitation.inviter.email}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={() => handleAcceptInvitation(invitation)}
+                            disabled={acceptingInvitation === invitation.id}
+                            size="sm"
+                            className="ml-4"
+                          >
+                            {acceptingInvitation === invitation.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : (
+                              <>
+                                <Check className="h-4 w-4 mr-1" />
+                                Accept
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Organization Creation Form */}
+                {showCreateOrg && (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                      <ul className="list-disc list-inside">
+                        <li className="text-sm text-destructive">{error}</li>
+                      </ul>
+                    )}
+                    {/* Logo Upload Section */}
+                    <div className="space-y-2 grid grid-cols-12 items-center space-x-4">
+                      <div className="space-y-2 col-span-4">
+                        {logoPreview ? (
+                          <div className="flex relative overflow-hidden justify-center w-32 h-32 items-center rounded-full space-x-4  border-2 border-dashed">
+                            <Image
+                              width={128}
+                              height={128}
+                              src={logoPreview}
+                              alt="Logo preview"
+                              className="object-cover h-full w-full"
+                            />
+                          </div>
+                        ) : (
+                          <FileUpload
+                            selectedFile={selectedLogo}
+                            onFileSelect={handleLogoSelect}
+                            onFileRemove={handleLogoRemove}
+                            accept="image/*"
+                            maxSize={FILE_SIZE_LIMITS.ORGANIZATION_LOGO}
+                            maxWidth={512}
+                            maxHeight={512}
+                            placeholder="Upload organization logo (max 512x512px)"
+                            disabled={isLoading}
+                            onError={setError}
+                          />
+                        )}
+                        {logoPreview ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleLogoRemove}
+                            className="text-xs -mt-4 text-center font-normal text-muted-foreground w-full"
+                            disabled={isLoading}
+                          >
+                            Remove Logo
+                          </Button>
+                        ) : (
+                          <Label className="text-xs text-center font-normal text-muted-foreground w-full">
+                            Org. Logo (Optional)
+                          </Label>
+                        )}
+                      </div>
+                      <div className="col-span-8 space-y-4">
+                        <div className="space-y-2 col-span-8">
+                          <Label htmlFor="name">Organization Name *</Label>
+                          <Input
+                            id="name"
+                            name="name"
+                            type="text"
+                            placeholder="Acme Inc."
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            required
+                            disabled={isLoading}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            This will be the display name for your organization.
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="slug">Organization Slug *</Label>
+                          <Input
+                            id="slug"
+                            name="slug"
+                            type="text"
+                            placeholder="acme-inc"
+                            value={formData.slug}
+                            onChange={handleInputChange}
+                            required
+                            disabled={isLoading}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            This will be used in URLs and must be unique. Only
+                            lowercase letters, numbers, and hyphens allowed.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">
+                        Description (Optional)
+                      </Label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        placeholder="A brief description of your organization..."
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        disabled={isLoading}
+                        className="w-full resize-none px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between pt-4">
+                      <div className="text-sm text-muted-foreground">
+                        By creating an organization, you agree to our{" "}
+                        <a href="#" className="text-primary hover:underline">
+                          Terms of Service
+                        </a>{" "}
+                        and{" "}
+                        <a href="#" className="text-primary hover:underline">
+                          Privacy Policy
+                        </a>
+                      </div>
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? "Creating..." : "Create Organization"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </>
+            )}
+          </div>
         </div>
         <div className="col-span-1 bg-gray-100 dark:bg-gray-900 p-4 h-screen flex items-center justify-center">
           <div className="max-w-md w-full space-y-4">
-            <Building2 className="w-10 h-10" />
-            <h1 className="text-2xl font-bold">Create Your Organization</h1>
-            <p className="text-sm text-muted-foreground">
-              Every user needs to be part of an organization to access the
-              dashboard. You&apos;ll be the admin of this organization and can
-              invite team members later.
-            </p>
+            {loadingInvitations ? (
+              <>
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto"></div>
+                <h1 className="text-2xl font-bold text-center">Loading...</h1>
+                <p className="text-sm text-muted-foreground text-center">
+                  Checking for invitations and setting up your account.
+                </p>
+              </>
+            ) : invitations.length > 0 ? (
+              !showCreateOrg ? (
+                <>
+                  <Mail className="w-10 h-10" />
+                  <h1 className="text-2xl font-bold">You&apos;re Invited!</h1>
+                  <p className="text-sm text-muted-foreground">
+                    You have pending invitations to join organizations. Accept
+                    an invitation to get started, or create your own
+                    organization using the toggle above.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Building2 className="w-10 h-10" />
+                  <h1 className="text-2xl font-bold">
+                    Create Your Organization
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    You can also accept one of your pending invitations using
+                    the toggle above, or create your own organization here.
+                  </p>
+                </>
+              )
+            ) : (
+              <>
+                <Building2 className="w-10 h-10" />
+                <h1 className="text-2xl font-bold">Create Your Organization</h1>
+                <p className="text-sm text-muted-foreground">
+                  Every user needs to be part of an organization to access the
+                  dashboard. You&apos;ll be the admin of this organization and
+                  can invite team members later.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

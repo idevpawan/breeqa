@@ -67,77 +67,6 @@ export class OrganizationServiceClient {
     }
   }
 
-  // Accept invitation (client-side)
-  async acceptInvitation(
-    token: string,
-    userId: string
-  ): Promise<ApiResponse<OrganizationMember>> {
-    try {
-      // Get invitation details
-      const { data: invitation, error: invError } = await this.supabase
-        .from("organization_invitations")
-        .select(
-          `
-          *,
-          organization:organizations(*)
-        `
-        )
-        .eq("token", token)
-        .eq("status", "pending")
-        .single();
-
-      if (invError || !invitation) {
-        return {
-          data: null,
-          error: "Invalid or expired invitation",
-          success: false,
-        };
-      }
-
-      // Check if invitation is expired
-      if (new Date(invitation.expires_at) < new Date()) {
-        return { data: null, error: "Invitation has expired", success: false };
-      }
-
-      // Add user to organization
-      const { data: member, error: memberError } = await this.supabase
-        .from("organization_members")
-        .insert({
-          organization_id: invitation.organization_id,
-          user_id: userId,
-          role: invitation.role,
-          status: "active",
-          invited_by: invitation.invited_by,
-        })
-        .select(
-          `
-          *,
-          user:user_profiles!user_id(*),
-          organization:organizations(*)
-        `
-        )
-        .single();
-
-      if (memberError) {
-        return { data: null, error: memberError.message, success: false };
-      }
-
-      // Update invitation status
-      await this.supabase
-        .from("organization_invitations")
-        .update({ status: "accepted" })
-        .eq("id", invitation.id);
-
-      return { data: member, error: null, success: true };
-    } catch (error) {
-      return {
-        data: null,
-        error: error instanceof Error ? error.message : "Unknown error",
-        success: false,
-      };
-    }
-  }
-
   // Create organization (client-side)
   async createOrganization(
     name: string,
@@ -198,6 +127,60 @@ export class OrganizationServiceClient {
       }
 
       return { data: organization, error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Get pending invitations for current user
+  async getUserInvitations(): Promise<ApiResponse<OrganizationInvitation[]>> {
+    try {
+      const {
+        data: { user },
+      } = await this.supabase.auth.getUser();
+      if (!user) {
+        return { data: null, error: "Not authenticated", success: false };
+      }
+
+      const response = await fetch("/api/user-invitations");
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { data: null, error: result.error, success: false };
+      }
+
+      return { data: result.data, error: null, success: true };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      };
+    }
+  }
+
+  // Accept invitation
+  async acceptInvitation(token: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch("/api/accept-invitation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { data: null, error: result.error, success: false };
+      }
+
+      return { data: result.data, error: null, success: true };
     } catch (error) {
       return {
         data: null,
