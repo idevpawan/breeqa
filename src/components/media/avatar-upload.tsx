@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { MediaService } from "@/lib/storage/media-service";
 import { FILE_SIZE_LIMITS } from "@/lib/storage/wasabi-config";
-import { useOrganization } from "@/lib/contexts/organization-context";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, Check } from "lucide-react";
 import Image from "next/image";

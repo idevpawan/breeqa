@@ -28,20 +28,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  useUserProfile,
-  useUserDisplayName,
-  useUserAvatar,
-} from "@/lib/contexts/user-profile-context";
+import { useUserStore } from "@/lib/stores/user-store";
+import { getUserDisplayName, getUserAvatar } from "@/lib/helpers/user-helpers";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "./theme-toggle";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const { userProfile, isLoading, clearProfile } = useUserProfile();
-  const displayName = useUserDisplayName();
-  const { initials } = useUserAvatar();
+  const { userProfile, isLoading, clearProfile } = useUserStore();
+  const displayName = getUserDisplayName(userProfile);
+  const { initials } = getUserAvatar(userProfile);
   const supabase = createClient();
 
   const handleSignOut = async () => {

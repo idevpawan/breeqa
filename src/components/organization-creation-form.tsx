@@ -16,7 +16,7 @@ import { FileUpload } from "@/components/ui/file-upload";
 import { organizationServiceClient } from "@/lib/services/organization-client";
 import { MediaService } from "@/lib/storage/media-service";
 import { FILE_SIZE_LIMITS } from "@/lib/storage/wasabi-config";
-import { useOrganization } from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import { Loader2, Image, X } from "lucide-react";
 
 interface OrganizationCreationFormProps {
@@ -37,7 +37,7 @@ export function OrganizationCreationForm({
   });
   const [selectedLogo, setSelectedLogo] = React.useState<File | null>(null);
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
-  const { refreshOrganizations } = useOrganization();
+  const { refreshOrganizations } = useOrganizationStore();
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

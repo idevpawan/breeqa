@@ -32,11 +32,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useOrganization } from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import { OrganizationSwitcher } from "./team-switcher";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { currentOrganization, userRole } = useOrganization();
+  const { currentOrganization, userRole } = useOrganizationStore();
 
   const data = {
     navMain: [

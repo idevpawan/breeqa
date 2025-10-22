@@ -9,17 +9,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useOrganization } from "@/lib/contexts/organization-context";
-import { usePermission } from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
-  const { currentOrganization, userRole, memberships, isLoading } =
-    useOrganization();
-  const canManageProjects = usePermission("projects:create");
-  const canInviteUsers = usePermission("users:invite");
+  const {
+    currentOrganization,
+    userRole,
+    memberships,
+    isLoading,
+    hasPermission,
+  } = useOrganizationStore();
+  const canManageProjects = hasPermission("projects:create");
+  const canInviteUsers = hasPermission("users:invite");
   const router = useRouter();
   const supabase = createClient();
 

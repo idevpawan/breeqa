@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useOrganization } from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import { OrganizationCreationForm } from "@/components/organization-creation-form";
 
 export function OrganizationSwitcher() {
@@ -29,7 +29,7 @@ export function OrganizationSwitcher() {
     isLoading,
     switchOrganization,
     userRole,
-  } = useOrganization();
+  } = useOrganizationStore();
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
 
   // Get organization icon based on name or use default
@@ -134,9 +134,9 @@ export function OrganizationSwitcher() {
                     </div>
                     <div className="flex flex-col capitalize">
                       <span className="font-medium">{org.name}</span>
-                      {/* <span className="text-xs text-muted-foreground">
-                        {getOrganizationRole(org.id)}
-                      </span> */}
+                      <span className="text-xs text-muted-foreground">
+                        {membership.role}
+                      </span>
                     </div>
                   </DropdownMenuItem>
                 );

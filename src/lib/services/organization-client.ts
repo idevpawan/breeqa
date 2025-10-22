@@ -49,7 +49,10 @@ export class OrganizationServiceClient {
       }
 
       const organizations = memberships
-        ?.map((m: any) => m.organization)
+        ?.map((m: any) => ({
+          ...m.organization,
+          role: m.role,
+        }))
         .filter(Boolean) as Organization[];
       const currentOrganization = organizations[0] || null;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useOrganization } from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import {
   OrganizationMember,
   PERMISSIONS,
@@ -32,7 +32,7 @@ const ROLE_ORDER: UserRole[] = [
 
 export default function MembersPage() {
   const { currentOrganization, isLoading: isLoadingOrganization } =
-    useOrganization();
+    useOrganizationStore();
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");

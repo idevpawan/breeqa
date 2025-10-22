@@ -14,12 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useUserProfile } from "@/lib/contexts/user-profile-context";
+import { useUserStore } from "@/lib/stores/user-store";
 import { Loader2, Save, User } from "lucide-react";
 
 export default function ProfileSettingsPage() {
   const { userProfile, isLoading, updateProfile, refreshProfile } =
-    useUserProfile();
+    useUserStore();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);

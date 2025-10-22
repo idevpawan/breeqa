@@ -25,7 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProjects } from "@/lib/contexts/project-context";
-import { useOrganization } from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import { ProjectMember, UserProfile } from "@/lib/types/organization";
 import { organizationServiceClient } from "@/lib/services/organization-client";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +59,7 @@ export function ProjectCreationDialog({
   const [loadingMembers, setLoadingMembers] = useState(false);
 
   const { createProject, setCurrentProject } = useProjects();
-  const { currentOrganization } = useOrganization();
+  const { currentOrganization } = useOrganizationStore();
   const { toast } = useToast();
   const router = useRouter();
 

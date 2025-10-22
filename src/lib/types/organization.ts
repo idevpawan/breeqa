@@ -20,6 +20,7 @@ export interface Organization {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  role: UserRole;
 }
 
 export interface UserProfile {

@@ -12,10 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  useOrganization,
-  usePermission,
-} from "@/lib/contexts/organization-context";
+import { useOrganizationStore } from "@/lib/stores/organization-store";
 import Link from "next/link";
 import PermissionsMatrix from "@/components/permissions/permissions-matrix";
 import { createClient } from "@/lib/supabase/client";
@@ -24,9 +21,9 @@ import { organizationServiceClient } from "@/lib/services/organization-client";
 import { OrganizationMember, UserRole } from "@/lib/types/organization";
 
 export default function OrganizationSettingsPage() {
-  const { currentOrganization } = useOrganization();
-  const canManageOrg = usePermission("org:manage");
-  const canInviteUsers = usePermission("users:invite");
+  const { currentOrganization, hasPermission } = useOrganizationStore();
+  const canManageOrg = hasPermission("org:manage");
+  const canInviteUsers = hasPermission("users:invite");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
